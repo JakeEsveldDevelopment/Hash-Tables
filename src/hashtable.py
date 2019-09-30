@@ -51,7 +51,20 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash = self._hash(key)
+        index = hash % self.capacity
+        if self.storage[index] != None and not isinstance(self.storage[index], LinkedPair):
+            pair = LinkedPair(key, value)
+            pair2 = LinkedPair(None, self.storage[index])
+            pair.next = pair2
+            self.storage[index] = pair
+            pass
+        if isinstance(self.storage[index], LinkedPair):
+            pair = LinkedPair(key, value)
+            pair2 = self.storage[index]
+            pair.next = pair2
+            self.storage[index] = pair
+        self.storage[index] = value
 
 
 
@@ -63,7 +76,18 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash = self._hash(key)
+        index = hash % self.capacity
+        if self.storage[index] == None:
+            print("key not found")
+            pass
+        value = self.storage[index]
+        if isinstance(self.storage[index], LinkedPair) and self.storage[index].next != None:
+            value = self.storage[index].value
+            self.storage[index] = self.storage[index].next
+
+        self.storage.pop(index=index)
+        return value
 
 
     def retrieve(self, key):
@@ -74,7 +98,18 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash = self._hash(key)
+        index = hash % self.capacity
+        value = None
+        if isinstance(self.storage[index], LinkedPair):
+            pair = self.storage[index]
+            while pair.key != key and pair.next != None:
+                pair = pair.next
+            value = pair.value
+        else:
+            value = self.storage[index]
+            print(value)
+        return value
 
 
     def resize(self):
@@ -84,6 +119,13 @@ class HashTable:
 
         Fill this in.
         '''
+        newCapacity = self.capacity * 2
+        newArray = [None] * newCapacity
+        for i in range(self.capacity):
+            value = self.storage[i]
+            newArray[i] = value
+        self.storage = newArray
+        self.capacity = newCapacity
         pass
 
 
