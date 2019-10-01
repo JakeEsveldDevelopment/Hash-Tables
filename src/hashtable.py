@@ -50,22 +50,16 @@ class HashTable:
         Hash collisions should be handled with Linked List Chaining.
 
         Fill this in.
+
         '''
-        hash = self._hash(key)
-        index = hash % self.capacity
-        if self.storage[index] != None and not isinstance(self.storage[index], LinkedPair):
-            pair = LinkedPair(key, value)
-            pair2 = LinkedPair(None, self.storage[index])
-            pair.next = pair2
-            self.storage[index] = pair
-            pass
-        if isinstance(self.storage[index], LinkedPair):
+        index = self._hash_mod(key)
+        if self.storage[index] is not None:
             pair = LinkedPair(key, value)
             pair2 = self.storage[index]
             pair.next = pair2
             self.storage[index] = pair
-        self.storage[index] = value
-
+            return
+        self.storage[index] = LinkedPair(key, value)
 
 
     def remove(self, key):
@@ -76,18 +70,31 @@ class HashTable:
 
         Fill this in.
         '''
-        hash = self._hash(key)
-        index = hash % self.capacity
+        index = self._hash_mod(key)
         if self.storage[index] == None:
             print("key not found")
-            pass
-        value = self.storage[index]
-        if isinstance(self.storage[index], LinkedPair) and self.storage[index].next != None:
-            value = self.storage[index].value
-            self.storage[index] = self.storage[index].next
-
-        self.storage.pop(index=index)
-        return value
+            return
+        pair = self.storage[index]
+        previous = None
+        while True:
+            if pair.next is None:
+                removedValue = pair.value
+                if previous != None:
+                    previous.next = None
+                else:
+                    self.storage[index] = None
+                return removedValue
+            if pair.key == key:
+                removedValue = pair.value
+                if pair.next != None and previous != None:
+                    previous.next = pair.next
+                elif previous != None:
+                    previous.next = None
+                else:
+                    self.storage[index] = None
+                return removedValue
+            previous = pair
+            pair = pair.next           
 
 
     def retrieve(self, key):
@@ -97,20 +104,20 @@ class HashTable:
         Returns None if the key is not found.
 
         Fill this in.
-        '''
-        hash = self._hash(key)
-        index = hash % self.capacity
-        value = None
-        if isinstance(self.storage[index], LinkedPair):
-            pair = self.storage[index]
-            while pair.key != key and pair.next != None:
-                pair = pair.next
-            value = pair.value
-        else:
-            value = self.storage[index]
-            print(value)
-        return value
 
+        '''
+
+        index = self._hash_mod(key)
+        if self.storage[index] != None:
+            pair = self.storage[index]
+            while True:
+                if pair.next is None:
+                    return pair.value
+                if pair.key == key:
+                    return pair.value
+                pair = pair.next
+            
+        return self.storage[index]
 
     def resize(self):
         '''
@@ -119,14 +126,21 @@ class HashTable:
 
         Fill this in.
         '''
-        newCapacity = self.capacity * 2
-        newArray = [None] * newCapacity
-        for i in range(self.capacity):
-            value = self.storage[i]
-            newArray[i] = value
-        self.storage = newArray
-        self.capacity = newCapacity
-        pass
+        old_capacity = self.capacity
+        self.capacity *= 2
+        oldStorage = self.storage
+        self.storage = [None] * self.capacity
+        for i in range(old_capacity):
+            if oldStorage[i] != None:
+                pair = oldStorage[i]
+                while True:
+                    self.insert(pair.key, pair.value)
+                    if pair.next != None:
+                        pair = pair.next
+                        continue
+                    else:
+                        break
+                    
 
 
 
